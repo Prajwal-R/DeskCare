@@ -1,0 +1,101 @@
+<resources>
+    <string name="app_name">DeskCare</string>
+    <string name="app_tagline">Desk Wellness &amp; Hydration Companion</string>
+    
+    <!-- Navigation Tabs -->
+    <string name="tab_dashboard">Dashboard</string>
+    <string name="tab_guides">Desk Guides</string>
+    <string name="tab_settings">Settings</string>
+
+    <!-- Dashboard -->
+    <string name="hydration_progress_title">Today\'s Hydration</string>
+    <string name="hydration_goal_reached">Daily goal achieved! 🎉</string>
+    <string name="quick_add_title">Quick Add Water</string>
+    <string name="cup_label">Cup (+250ml)</string>
+    <string name="bottle_label">Bottle (+500ml)</string>
+    <string name="custom_label">Custom</string>
+    <string name="log_history_title">Today\'s Logs</string>
+    <string name="no_logs_yet">No water logged yet today.</string>
+    <string name="delete_entry_desc">Delete log entry</string>
+    
+    <!-- Custom Intake Dialog -->
+    <string name="custom_intake_title">Log Water</string>
+    <string name="custom_intake_hint">Enter water amount in milliliters (ml)</string>
+    <string name="custom_intake_label">Amount (ml)</string>
+    <string name="custom_intake_error">Please enter a valid amount between 50 and 2000 ml</string>
+
+    <!-- Desk Guides -->
+    <string name="guides_title">Desk Wellness Guides</string>
+    <string name="guides_subtitle">Interactive exercises to stay healthy at your desk</string>
+    
+    <!-- Eye Care Card -->
+    <string name="eye_care_title">Eye Care (20-20-20 Rule)</string>
+    <string name="eye_care_desc">Every 20 minutes, look at an object at least 20 feet away for 20 seconds to reduce screen-induced eye strain.</string>
+    <string name="start_eye_timer">Start 20s Break</string>
+    <string name="eye_timer_running">Resting Eyes: Look 20ft away!</string>
+    <string name="eye_timer_done">Eyes rested! Back to work.</string>
+
+    <!-- Stretch Card -->
+    <string name="stretch_title">Neck &amp; Shoulder Stretch</string>
+    <string name="stretch_desc">Roll your shoulders backwards 10 times, tilt your head side to side, and roll your neck slowly to release tension.</string>
+    <string name="start_stretch_timer">Start 30s Stretch</string>
+    <string name="stretch_timer_running">Stretching... Keep breathing!</string>
+    <string name="stretch_timer_done">Feels better! Ready to go.</string>
+
+    <!-- Deep Breathing Card -->
+    <string name="breathing_title">Deep Breathing Guide</string>
+    <string name="breathing_desc">Calm your nervous system using box breathing: Inhale for 4 seconds, hold for 4 seconds, exhale for 4 seconds.</string>
+    <string name="start_breathing">Start Breathing Session</string>
+    <string name="breathing_inhale">Inhale…</string>
+    <string name="breathing_hold">Hold…</string>
+    <string name="breathing_exhale">Exhale…</string>
+    <string name="breathing_done">Session completed. Feeling refreshed!</string>
+    <string name="stop_session">Stop Session</string>
+
+    <!-- Settings Screen -->
+    <string name="reminders_toggle_label">Reminders</string>
+    <string name="reminders_on_subtitle">DeskCare wellness alerts are active</string>
+    <string name="reminders_off_subtitle">Turn on to receive reminders</string>
+    <string name="schedule_title">Daily Schedule</string>
+    <string name="start_time_label">Start Time</string>
+    <string name="end_time_label">End Time</string>
+    <string name="interval_label">Reminder Interval</string>
+    <string name="interval_custom">Custom · Every %1$s</string>
+    <string name="interval_preset">Every %1$s</string>
+    <string name="interval_custom_option">Custom…</string>
+    <string name="custom_interval_title">Custom Interval</string>
+    <string name="custom_interval_hours">Hours</string>
+    <string name="custom_interval_minutes">Minutes</string>
+    <string name="custom_interval_hint">Between 5 minutes and 12 hours</string>
+    <string name="custom_interval_error">Enter at least 5 minutes total</string>
+    
+    <!-- Wellness Preferences -->
+    <string name="preferences_title">Wellness Preferences</string>
+    <string name="daily_water_goal_label">Daily Water Goal (%1$d ml)</string>
+    <string name="reminder_types_label">Reminder Categories</string>
+    <string name="reminder_type_hydration">Hydration reminders</string>
+    <string name="reminder_type_eye">Eye Care (20-20-20 rule) reminders</string>
+    <string name="reminder_type_posture">Posture check &amp; stretch reminders</string>
+
+    <!-- Common Actions -->
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="change">Change</string>
+    <string name="open_settings">Open Settings</string>
+    
+    <!-- Notification & System -->
+    <string name="notification_title_hydration">DeskCare — Hydration Time! 💧</string>
+    <string name="notification_body_hydration">It\'s time to take a sip of water and hydrate your body.</string>
+    
+    <string name="notification_title_eye">DeskCare — Look Away! 👁️</string>
+    <string name="notification_body_eye">Rest your eyes: Look at an object 20 feet away for 20 seconds.</string>
+    
+    <string name="notification_title_posture">DeskCare — Posture Check! 🧘</string>
+    <string name="notification_body_posture">Sit up straight, roll your shoulders, or do a quick stretch.</string>
+    
+    <string name="quick_log_action_label">Drank 250ml</string>
+    
+    <string name="wearable_info">Reminders use high-priority silent alerts with vibration. They automatically mirror to paired Wear OS watches.</string>
+    <string name="exact_alarm_title">Exact alarms needed</string>
+    <string name="exact_alarm_body">Allow exact alarms so reminders fire on time, even when the device is idle.</string>
+</resources>
