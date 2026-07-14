@@ -52,6 +52,21 @@
     <string name="breathing_done">Session completed. Feeling refreshed!</string>
     <string name="stop_session">Stop Session</string>
 
+    <!-- Posture Correction Card -->
+    <string name="guides_posture_corrector_title">Live Camera Posture Correction</string>
+    <string name="guides_posture_corrector_desc">Use your front camera to analyze your posture in real-time. Detects head tilt and if you are leaning too close to the screen.</string>
+    <string name="posture_status_good">Good Posture 🟢</string>
+    <string name="posture_status_tilted">Head Tilted Down 🔴</string>
+    <string name="posture_status_leaning">Leaning Too Close 🔴</string>
+    <string name="posture_status_turned">Head Turned Away 🟡</string>
+    <string name="posture_status_noface">No Face Detected ⚪</string>
+    <string name="posture_status_initializing">Checking posture…</string>
+    <string name="posture_button_start">Start Camera Tracking</string>
+    <string name="posture_button_stop">Stop Tracking</string>
+    <string name="posture_warning_message">Slouching detected! Please sit back and sit up straight.</string>
+    <string name="posture_permission_denied">Camera permission is required for live posture tracking.</string>
+    <string name="posture_permission_button">Grant Permission</string>
+
     <!-- Settings Screen -->
     <string name="reminders_toggle_label">Reminders</string>
     <string name="reminders_on_subtitle">DeskCare wellness alerts are active</string>

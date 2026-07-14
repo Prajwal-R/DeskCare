@@ -35,6 +35,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import android.widget.Toast
+import android.content.Context
 import dev.prajwal.waterreminder.R
 import dev.prajwal.waterreminder.data.IntervalOptions
 import dev.prajwal.waterreminder.data.UserSettings
@@ -473,9 +479,223 @@ fun GuidesTab(
             )
         }
 
+        PostureCorrectorCard()
         EyeCareCard(viewModel = viewModel, lastCompleted = settings.lastEyeCareTime)
         StretchCard(viewModel = viewModel, lastCompleted = settings.lastStretchTime)
         BreathingCard(viewModel = viewModel, lastCompleted = settings.lastBreathingTime)
+    }
+}
+
+@Composable
+fun PostureCorrectorCard() {
+    var isTracking by remember { mutableStateOf(false) }
+    var postureState by remember { mutableStateOf(PostureState.INITIALIZING) }
+    var badPostureSeconds by remember { mutableStateOf(0) }
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            isTracking = true
+            postureState = PostureState.INITIALIZING
+        } else {
+            Toast.makeText(context, context.getString(R.string.posture_permission_denied), Toast.LENGTH_LONG).show()
+        }
+    }
+
+    DisposableEffect(isTracking) {
+        onDispose {
+            if (!isTracking) {
+                try {
+                    val cameraProviderFuture = androidx.camera.lifecycle.ProcessCameraProvider.getInstance(context)
+                    val cameraProvider = cameraProviderFuture.get()
+                    cameraProvider.unbindAll()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(isTracking, postureState) {
+        if (isTracking && (postureState == PostureState.TILTED_DOWN || postureState == PostureState.LEANING_CLOSE)) {
+            delay(4000) // 4 seconds continuous bad posture
+            
+            // Trigger vibration feedback
+            val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(android.os.VibrationEffect.createOneShot(500, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(500)
+            }
+            
+            // Trigger audio feedback (ToneGenerator beep)
+            try {
+                val toneGen = android.media.ToneGenerator(android.media.AudioManager.STREAM_NOTIFICATION, 100)
+                toneGen.startTone(android.media.ToneGenerator.TONE_PROP_BEEP, 250)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .animateContentSize(),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isTracking && (postureState == PostureState.TILTED_DOWN || postureState == PostureState.LEANING_CLOSE)) {
+                MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.25f)
+            } else if (isTracking && postureState == PostureState.GOOD) {
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f)
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+            }
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Visibility,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = stringResource(R.string.guides_posture_corrector_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+            Text(
+                text = stringResource(R.string.guides_posture_corrector_desc),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            if (isTracking) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                ) {
+                    AndroidView(
+                        factory = { ctx ->
+                            val previewView = androidx.camera.view.PreviewView(ctx).apply {
+                                scaleType = androidx.camera.view.PreviewView.ScaleType.FILL_CENTER
+                            }
+                            val cameraProviderFuture = androidx.camera.lifecycle.ProcessCameraProvider.getInstance(ctx)
+                            cameraProviderFuture.addListener({
+                                val cameraProvider = cameraProviderFuture.get()
+                                val preview = androidx.camera.core.Preview.Builder().build().also {
+                                    it.setSurfaceProvider(previewView.surfaceProvider)
+                                }
+                                val imageAnalysis = androidx.camera.core.ImageAnalysis.Builder()
+                                    .setBackpressureStrategy(androidx.camera.core.ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                                    .build()
+                                    .also {
+                                        it.setAnalyzer(
+                                            java.util.concurrent.Executors.newSingleThreadExecutor(),
+                                            PostureAnalyzer { state ->
+                                                postureState = state
+                                            }
+                                        )
+                                    }
+                                val cameraSelector = androidx.camera.core.CameraSelector.DEFAULT_FRONT_CAMERA
+                                try {
+                                    cameraProvider.unbindAll()
+                                    cameraProvider.bindToLifecycle(
+                                        lifecycleOwner,
+                                        cameraSelector,
+                                        preview,
+                                        imageAnalysis
+                                    )
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
+                            }, ContextCompat.getMainExecutor(ctx))
+                            previewView
+                        },
+                        modifier = Modifier.fillMaxSize()
+                    )
+
+                    // Floating status overlay
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(12.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color.Black.copy(alpha = 0.6f))
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        val statusText = when (postureState) {
+                            PostureState.INITIALIZING -> stringResource(R.string.posture_status_initializing)
+                            PostureState.GOOD -> stringResource(R.string.posture_status_good)
+                            PostureState.TILTED_DOWN -> stringResource(R.string.posture_status_tilted)
+                            PostureState.LEANING_CLOSE -> stringResource(R.string.posture_status_leaning)
+                            PostureState.TURNED_AWAY -> stringResource(R.string.posture_status_turned)
+                            PostureState.NO_FACE -> stringResource(R.string.posture_status_noface)
+                        }
+                        Text(
+                            text = statusText,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                if (postureState == PostureState.TILTED_DOWN || postureState == PostureState.LEANING_CLOSE) {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.85f)
+                        ),
+                        modifier = Modifier.fillMaxWidth().animateContentSize()
+                    ) {
+                        Text(
+                            text = stringResource(R.string.posture_warning_message),
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth().padding(12.dp)
+                        )
+                    }
+                }
+
+                Button(
+                    onClick = { isTracking = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.posture_button_stop))
+                }
+            } else {
+                Button(
+                    onClick = {
+                        val hasPermission = ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.CAMERA
+                        ) == PackageManager.PERMISSION_GRANTED
+                        if (hasPermission) {
+                            isTracking = true
+                            postureState = PostureState.INITIALIZING
+                        } else {
+                            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.CameraAlt, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.posture_button_start))
+                }
+            }
+        }
     }
 }
 
