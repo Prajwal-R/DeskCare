@@ -140,7 +140,7 @@ fun SettingsScreen(
         ) {
             when (selectedTabIndex) {
                 0 -> DashboardTab(viewModel = viewModel, settings = settings)
-                1 -> GuidesTab()
+                1 -> GuidesTab(viewModel = viewModel, settings = settings)
                 2 -> SettingsTab(
                     viewModel = viewModel,
                     settings = settings,
@@ -448,7 +448,10 @@ fun CustomIntakeDialog(
 }
 
 @Composable
-fun GuidesTab() {
+fun GuidesTab(
+    viewModel: SettingsViewModel,
+    settings: UserSettings
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -470,14 +473,17 @@ fun GuidesTab() {
             )
         }
 
-        EyeCareCard()
-        StretchCard()
-        BreathingCard()
+        EyeCareCard(viewModel = viewModel, lastCompleted = settings.lastEyeCareTime)
+        StretchCard(viewModel = viewModel, lastCompleted = settings.lastStretchTime)
+        BreathingCard(viewModel = viewModel, lastCompleted = settings.lastBreathingTime)
     }
 }
 
 @Composable
-fun EyeCareCard() {
+fun EyeCareCard(
+    viewModel: SettingsViewModel,
+    lastCompleted: Long
+) {
     var timerRemaining by remember { mutableStateOf(20) }
     var isRunning by remember { mutableStateOf(false) }
     var isDone by remember { mutableStateOf(false) }
@@ -489,6 +495,7 @@ fun EyeCareCard() {
             if (timerRemaining == 0) {
                 isRunning = false
                 isDone = true
+                viewModel.updateLastEyeCareTime(System.currentTimeMillis())
             }
         }
     }
@@ -520,6 +527,12 @@ fun EyeCareCard() {
                 text = stringResource(R.string.eye_care_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = "Last completed: ${formatLastCompletedTime(lastCompleted)}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                modifier = Modifier.padding(top = 6.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -592,7 +605,10 @@ fun EyeCareCard() {
 }
 
 @Composable
-fun StretchCard() {
+fun StretchCard(
+    viewModel: SettingsViewModel,
+    lastCompleted: Long
+) {
     var timerRemaining by remember { mutableStateOf(30) }
     var isRunning by remember { mutableStateOf(false) }
     var isDone by remember { mutableStateOf(false) }
@@ -604,6 +620,7 @@ fun StretchCard() {
             if (timerRemaining == 0) {
                 isRunning = false
                 isDone = true
+                viewModel.updateLastStretchTime(System.currentTimeMillis())
             }
         }
     }
@@ -613,7 +630,7 @@ fun StretchCard() {
             .fillMaxWidth()
             .animateContentSize(),
         colors = CardDefaults.cardColors(
-            containerColor = if (isRunning) MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.25f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+            containerColor = if (isRunning) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -621,7 +638,7 @@ fun StretchCard() {
                 Icon(
                     imageVector = Icons.Default.Accessibility,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.secondary
+                    tint = MaterialTheme.colorScheme.primary
                 )
                 Text(
                     text = stringResource(R.string.stretch_title),
@@ -636,6 +653,12 @@ fun StretchCard() {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            Text(
+                text = "Last completed: ${formatLastCompletedTime(lastCompleted)}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                modifier = Modifier.padding(top = 6.dp)
+            )
             Spacer(modifier = Modifier.height(16.dp))
 
             if (isRunning) {
@@ -649,7 +672,7 @@ fun StretchCard() {
                             text = stringResource(R.string.stretch_timer_running),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.secondary
+                            color = MaterialTheme.colorScheme.primary
                         )
                         Text(
                             text = "$timerRemaining seconds remaining",
@@ -670,7 +693,6 @@ fun StretchCard() {
                 Spacer(modifier = Modifier.height(12.dp))
                 LinearProgressIndicator(
                     progress = { timerRemaining.toFloat() / 30f },
-                    color = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.fillMaxWidth(),
                     strokeCap = StrokeCap.Round
                 )
@@ -683,7 +705,7 @@ fun StretchCard() {
                     Text(
                         text = stringResource(R.string.stretch_timer_done),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.secondary,
+                        color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.SemiBold
                     )
                     Button(
@@ -691,16 +713,14 @@ fun StretchCard() {
                             isDone = false
                             timerRemaining = 30
                             isRunning = true
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                        }
                     ) {
                         Text("Restart")
                     }
                 }
             } else {
                 Button(
-                    onClick = { isRunning = true },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                    onClick = { isRunning = true }
                 ) {
                     Text(stringResource(R.string.start_stretch_timer))
                 }
@@ -710,7 +730,10 @@ fun StretchCard() {
 }
 
 @Composable
-fun BreathingCard() {
+fun BreathingCard(
+    viewModel: SettingsViewModel,
+    lastCompleted: Long
+) {
     var breathingPhase by remember { mutableStateOf(0) } // 0=idle, 1=inhale, 2=hold, 3=exhale, 4=done
     var phaseSecondsRemaining by remember { mutableStateOf(4) }
     var cyclesRemaining by remember { mutableStateOf(4) }
@@ -737,6 +760,7 @@ fun BreathingCard() {
                             phaseSecondsRemaining = 4
                         } else {
                             breathingPhase = 4
+                            viewModel.updateLastBreathingTime(System.currentTimeMillis())
                         }
                     }
                 }
@@ -764,7 +788,7 @@ fun BreathingCard() {
             .fillMaxWidth()
             .animateContentSize(),
         colors = CardDefaults.cardColors(
-            containerColor = if (breathingPhase in 1..3) MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.25f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+            containerColor = if (breathingPhase in 1..3) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
         )
     ) {
         Column(
@@ -779,7 +803,7 @@ fun BreathingCard() {
                 Icon(
                     imageVector = Icons.Default.SelfImprovement,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.tertiary
+                    tint = MaterialTheme.colorScheme.primary
                 )
                 Text(
                     text = stringResource(R.string.breathing_title),
@@ -795,6 +819,12 @@ fun BreathingCard() {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth()
             )
+            Text(
+                text = "Last completed: ${formatLastCompletedTime(lastCompleted)}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                modifier = Modifier.fillMaxWidth().padding(top = 6.dp)
+            )
             Spacer(modifier = Modifier.height(16.dp))
 
             if (breathingPhase in 1..3) {
@@ -808,14 +838,14 @@ fun BreathingCard() {
                         modifier = Modifier
                             .size(80.dp * scale)
                             .clip(CircleShape),
-                        color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.35f),
-                        border = androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.tertiary)
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
+                        border = androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Text(
                                 text = "$phaseSecondsRemaining",
                                 style = MaterialTheme.typography.titleLarge,
-                                color = MaterialTheme.colorScheme.tertiary,
+                                color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -835,7 +865,7 @@ fun BreathingCard() {
                     text = instructionText,
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.tertiary
+                    color = MaterialTheme.colorScheme.primary
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -856,7 +886,7 @@ fun BreathingCard() {
                 Text(
                     text = stringResource(R.string.breathing_done),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.tertiary,
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.SemiBold,
                     textAlign = TextAlign.Center
                 )
@@ -866,8 +896,7 @@ fun BreathingCard() {
                         cyclesRemaining = 4
                         phaseSecondsRemaining = 4
                         breathingPhase = 1
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                    }
                 ) {
                     Text("Start Again")
                 }
@@ -878,12 +907,32 @@ fun BreathingCard() {
                         phaseSecondsRemaining = 4
                         breathingPhase = 1
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
                     modifier = Modifier.align(Alignment.Start)
                 ) {
                     Text(stringResource(R.string.start_breathing))
                 }
             }
+        }
+    }
+}
+
+private fun formatLastCompletedTime(timestamp: Long): String {
+    if (timestamp == 0L) return "Never"
+    val lastTime = java.time.Instant.ofEpochMilli(timestamp)
+        .atZone(java.time.ZoneId.systemDefault())
+        .toLocalDateTime()
+    val today = java.time.LocalDate.now()
+    val lastDate = lastTime.toLocalDate()
+
+    val timeFormatter = java.time.format.DateTimeFormatter.ofPattern("h:mm a")
+    val timeStr = lastTime.format(timeFormatter)
+
+    return when {
+        lastDate == today -> "Today at $timeStr"
+        lastDate == today.minusDays(1) -> "Yesterday at $timeStr"
+        else -> {
+            val dateFormatter = java.time.format.DateTimeFormatter.ofPattern("MMM d, h:mm a")
+            lastTime.format(dateFormatter)
         }
     }
 }

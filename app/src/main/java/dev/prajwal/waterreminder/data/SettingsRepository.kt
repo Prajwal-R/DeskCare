@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -29,7 +30,10 @@ class SettingsRepository(private val context: Context) {
             waterLogHistory = prefs[KEY_WATER_LOG_HISTORY] ?: "",
             enableHydrationReminders = prefs[KEY_ENABLE_HYDRATION_REMINDERS] ?: true,
             enableEyeReminders = prefs[KEY_ENABLE_EYE_REMINDERS] ?: true,
-            enablePostureReminders = prefs[KEY_ENABLE_POSTURE_REMINDERS] ?: true
+            enablePostureReminders = prefs[KEY_ENABLE_POSTURE_REMINDERS] ?: true,
+            lastEyeCareTime = prefs[KEY_LAST_EYE_CARE_TIME] ?: 0L,
+            lastStretchTime = prefs[KEY_LAST_STRETCH_TIME] ?: 0L,
+            lastBreathingTime = prefs[KEY_LAST_BREATHING_TIME] ?: 0L
         )
     }
 
@@ -48,6 +52,9 @@ class SettingsRepository(private val context: Context) {
             prefs[KEY_ENABLE_HYDRATION_REMINDERS] = settings.enableHydrationReminders
             prefs[KEY_ENABLE_EYE_REMINDERS] = settings.enableEyeReminders
             prefs[KEY_ENABLE_POSTURE_REMINDERS] = settings.enablePostureReminders
+            prefs[KEY_LAST_EYE_CARE_TIME] = settings.lastEyeCareTime
+            prefs[KEY_LAST_STRETCH_TIME] = settings.lastStretchTime
+            prefs[KEY_LAST_BREATHING_TIME] = settings.lastBreathingTime
         }
     }
 
@@ -65,5 +72,8 @@ class SettingsRepository(private val context: Context) {
         private val KEY_ENABLE_HYDRATION_REMINDERS = booleanPreferencesKey("enable_hydration_reminders")
         private val KEY_ENABLE_EYE_REMINDERS = booleanPreferencesKey("enable_eye_reminders")
         private val KEY_ENABLE_POSTURE_REMINDERS = booleanPreferencesKey("enable_posture_reminders")
+        private val KEY_LAST_EYE_CARE_TIME = longPreferencesKey("last_eye_care_time")
+        private val KEY_LAST_STRETCH_TIME = longPreferencesKey("last_stretch_time")
+        private val KEY_LAST_BREATHING_TIME = longPreferencesKey("last_breathing_time")
     }
 }

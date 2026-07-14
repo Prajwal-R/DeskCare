@@ -101,6 +101,18 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         ))
     }
 
+    fun updateLastEyeCareTime(timestamp: Long) {
+        updateSettings(settings.value.copy(lastEyeCareTime = timestamp))
+    }
+
+    fun updateLastStretchTime(timestamp: Long) {
+        updateSettings(settings.value.copy(lastStretchTime = timestamp))
+    }
+
+    fun updateLastBreathingTime(timestamp: Long) {
+        updateSettings(settings.value.copy(lastBreathingTime = timestamp))
+    }
+
     fun updateRemindersEnabled(enabled: Boolean) {
         updateSettings(settings.value.copy(remindersEnabled = enabled))
     }

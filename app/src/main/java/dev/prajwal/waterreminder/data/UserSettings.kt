@@ -13,7 +13,10 @@ data class UserSettings(
     val waterLogHistory: String = "",
     val enableHydrationReminders: Boolean = true,
     val enableEyeReminders: Boolean = true,
-    val enablePostureReminders: Boolean = true
+    val enablePostureReminders: Boolean = true,
+    val lastEyeCareTime: Long = 0L,
+    val lastStretchTime: Long = 0L,
+    val lastBreathingTime: Long = 0L
 ) {
     val startTimeMinutes: Int get() = startHour * 60 + startMinute
     val endTimeMinutes: Int get() = endHour * 60 + endMinute
